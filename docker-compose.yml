@@ -1,0 +1,23 @@
+services:
+  plan-my-trip-dev-db:
+    image: postgres:13
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: ${DB_DEV_USERNAME}
+      POSTGRES_PASSWORD: ${DB_DEV_PASSWORD}
+      POSTGRES_DB:  ${DB_DEV_TITLE}
+    networks:
+      - plan-my-trip-nw
+  plan-my-trip-test-db:
+    image: postgres:13
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: ${DB_DEV_USERNAME}
+      POSTGRES_PASSWORD: ${DB_DEV_PASSWORD}
+      POSTGRES_DB: ${DB_DEV_TITLE}
+    networks:
+      - plan-my-trip-nw
+networks:
+  plan-my-trip-nw:
