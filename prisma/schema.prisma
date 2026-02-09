@@ -46,8 +46,11 @@ model User {
   /// @DtoEntityHidden
   password String
 
-  name        String?
+  name String?
+
+  /// @DtoEntityHidden
   Destination Destination[]
+  /// @DtoEntityHidden
   Activity    Activity[]
 
   @@map("users")
@@ -59,15 +62,18 @@ enum Role {
 }
 
 model Destination {
-  id          String     @id @default(uuid())
+  id          String   @id @default(uuid())
   title       String
   description String?
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @default(now()) @map("updated_at")
-  dueDate     DateTime   @default(now()) @map("due_date")
-  userId      String     @map("user_id")
-  user        User       @relation(fields: [userId], references: [id])
-  Activity    Activity[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+  dueDate     DateTime @default(now()) @map("due_date")
+  userId      String   @map("user_id")
+
+  /// @DtoEntityHidden
+  user     User       @relation(fields: [userId], references: [id])
+  /// @DtoEntityHidden
+  Activity Activity[]
 
   @@map("destinations")
 }
@@ -80,9 +86,11 @@ model Activity {
   updatedAt   DateTime @default(now()) @map("updated_at")
 
   destinationId String      @map("destination_id")
-  destination   Destination @relation(fields: [destinationId], references: [id])
+  /// @DtoEntityHidden
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
 
   userId String @map("user_id")
+  /// @DtoEntityHidden
   user   User   @relation(fields: [userId], references: [id])
 
   @@map("activities")

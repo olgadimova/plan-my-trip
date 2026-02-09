@@ -1,8 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { DestinationModel } from 'generated/nestjs-dto/destination.entity';
 import { UserModel } from 'generated/nestjs-dto/user.entity';
 import { PrismaDbService } from '../prisma_db/prisma_db.service';
-import { CreateDestinationDto, GetAllDestinationsResponseDto } from './dto';
+import {
+  CreateDestinationDto,
+  DestinationResultModel,
+  GetAllDestinationsResponseDto,
+} from './dto';
 
 @Injectable()
 export class DestinationService {
@@ -17,7 +22,9 @@ export class DestinationService {
       },
     });
 
-    return { destinations };
+    return {
+      destinations: plainToInstance(DestinationResultModel, destinations),
+    };
   }
 
   async getDestination({
@@ -37,17 +44,17 @@ export class DestinationService {
     if (!destination || destination.userId !== userId)
       throw new NotFoundException('No destination found');
 
-    return destination;
+    return plainToInstance(DestinationResultModel, destination);
   }
 
-  createDestination({
+  async createDestination({
     userId,
     data,
   }: {
     userId: UserModel['id'];
     data: CreateDestinationDto;
   }): Promise<DestinationModel> {
-    return this.prisma.destination.create({
+    const destination: DestinationModel = await this.prisma.destination.create({
       data: {
         userId,
         title: data.title,
@@ -55,6 +62,8 @@ export class DestinationService {
         dueDate: data.due_date,
       },
     });
+
+    return plainToInstance(DestinationResultModel, destination);
   }
 
   async deleteDestination({
@@ -78,5 +87,38 @@ export class DestinationService {
         id,
       },
     });
+  }
+
+  async editDestination({
+    userId,
+    id,
+    data,
+  }: {
+    userId: UserModel['id'];
+    id: DestinationModel['userId'];
+    data: CreateDestinationDto;
+  }): Promise<DestinationResultModel> {
+    const destination = await this.prisma.destination.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!destination || destination.userId !== userId)
+      throw new NotFoundException('No destination found');
+
+    const updatedDestination: DestinationModel =
+      await this.prisma.destination.update({
+        where: {
+          id,
+        },
+        data: {
+          title: data.title,
+          description: data.description,
+          dueDate: data.due_date,
+        },
+      });
+
+    return plainToInstance(DestinationResultModel, updatedDestination);
   }
 }

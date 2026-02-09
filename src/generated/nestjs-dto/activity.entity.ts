@@ -1,8 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { DestinationModel } from './destination.entity';
-import { UserModel } from './user.entity';
-
 export class ActivityModel {
   @ApiProperty({
     type: 'string',
@@ -32,17 +29,7 @@ export class ActivityModel {
   })
   destinationId: string;
   @ApiProperty({
-    type: () => DestinationModel,
-    required: false,
-  })
-  destination?: DestinationModel;
-  @ApiProperty({
     type: 'string',
   })
   userId: string;
-  @ApiProperty({
-    type: () => UserModel,
-    required: false,
-  })
-  user?: UserModel;
 }

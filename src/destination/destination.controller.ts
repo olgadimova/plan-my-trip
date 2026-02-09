@@ -1,14 +1,29 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { DestinationModel } from 'generated/nestjs-dto/destination.entity';
 
 import { GetUser } from '../auth/decorator';
 import { DestinationService } from './destination.service';
-import { CreateDestinationDto, GetAllDestinationsResponseDto } from './dto';
+import {
+  CreateDestinationDto,
+  DestinationResultModel,
+  GetAllDestinationsResponseDto,
+} from './dto';
 
 @ApiTags('Destinations')
 @Controller('destination')
+@UseInterceptors(ClassSerializerInterceptor)
 export class DestinationController {
   constructor(private destinationService: DestinationService) {}
 
@@ -55,6 +70,22 @@ export class DestinationController {
     return this.destinationService.deleteDestination({
       userId: user.sub,
       id,
+    });
+  }
+
+  @ApiResponse({
+    type: DestinationResultModel,
+  })
+  @Patch(':id')
+  editDestination(
+    @GetUser() user: { sub: string; email: string },
+    @Param('id') id: string,
+    @Body() data: CreateDestinationDto,
+  ): Promise<DestinationResultModel> {
+    return this.destinationService.editDestination({
+      userId: user.sub,
+      id,
+      data,
     });
   }
 }

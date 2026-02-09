@@ -1,8 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-
 import { Role } from '../prisma/client';
-import { ActivityModel } from './activity.entity';
-import { DestinationModel } from './destination.entity';
 
 export class UserModel {
   @ApiProperty({
@@ -33,16 +30,4 @@ export class UserModel {
     nullable: true,
   })
   name: string | null;
-  @ApiProperty({
-    type: () => DestinationModel,
-    isArray: true,
-    required: false,
-  })
-  Destination?: DestinationModel[];
-  @ApiProperty({
-    type: () => ActivityModel,
-    isArray: true,
-    required: false,
-  })
-  Activity?: ActivityModel[];
 }

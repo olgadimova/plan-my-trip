@@ -18,7 +18,8 @@ export class CreateDestinationDto {
   description?: string;
 
   @ApiProperty({
-    type: 'string',
+    type: String,
+    format: 'date-time',
   })
   @IsNotEmpty()
   @IsString()
