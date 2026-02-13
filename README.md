@@ -12,6 +12,4 @@ This is a backend api for a travel planner application. Includes:
 4. RBAC (role-based access control) - user types include User(traveller) and Admin (site admin).
 5. Utilities: request body validation, route tests, get all destinations/activities pagination.
 
-Live url for testing: ... 
-Swagger url: ...
 
