@@ -14,8 +14,10 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DestinationModel } from 'generated/nestjs-dto/destination.entity';
 
 import { GetUser } from '../auth/decorator';
+import { RequestUserModel } from '../auth/dto';
 import { DestinationService } from './destination.service';
 import {
+  ActivitiesResponseDto,
   CreateDestinationDto,
   DestinationResultModel,
   GetAllDestinationsResponseDto,
@@ -46,6 +48,20 @@ export class DestinationController {
     @Param('id') id: string,
   ): Promise<DestinationModel> {
     return this.destinationService.getDestination({ userId: user.sub, id });
+  }
+
+  @ApiResponse({
+    type: ActivitiesResponseDto,
+  })
+  @Get(':destinationId/activities')
+  getDestinationActivities(
+    @GetUser() user: RequestUserModel,
+    @Param('destinationId') destinationId: string,
+  ): Promise<ActivitiesResponseDto> {
+    return this.destinationService.getDestinationActivities({
+      destinationId,
+      userId: user.sub,
+    });
   }
 
   @ApiResponse({

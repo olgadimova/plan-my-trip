@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+
 import { DestinationModel } from 'generated/nestjs-dto/destination.entity';
 import { UserModel } from 'generated/nestjs-dto/user.entity';
+
 import { PrismaDbService } from '../prisma_db/prisma_db.service';
+import { ActivityResponseModel } from '../shared/dto';
 import {
+  ActivitiesResponseDto,
   CreateDestinationDto,
   DestinationResultModel,
   GetAllDestinationsResponseDto,
@@ -45,6 +49,23 @@ export class DestinationService {
       throw new NotFoundException('No destination found');
 
     return plainToInstance(DestinationResultModel, destination);
+  }
+
+  async getDestinationActivities({
+    destinationId,
+    userId,
+  }: {
+    destinationId: string;
+    userId: string;
+  }): Promise<ActivitiesResponseDto> {
+    const activities = await this.prisma.activity.findMany({
+      where: {
+        destinationId,
+        userId,
+      },
+    });
+
+    return { activities: plainToInstance(ActivityResponseModel, activities) };
   }
 
   async createDestination({

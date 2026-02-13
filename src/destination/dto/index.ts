@@ -1,3 +1,4 @@
+export { ActivitiesResponseDto } from './activities.response.dto';
 export { CreateDestinationDto } from './destination.dto';
 export {
   DestinationResultModel,
