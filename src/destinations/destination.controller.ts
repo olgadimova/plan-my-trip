@@ -24,7 +24,7 @@ import {
 } from './dto';
 
 @ApiTags('Destinations')
-@Controller('destination')
+@Controller('destinations')
 @UseInterceptors(ClassSerializerInterceptor)
 export class DestinationController {
   constructor(private destinationService: DestinationService) {}
@@ -32,7 +32,7 @@ export class DestinationController {
   @ApiResponse({
     type: GetAllDestinationsResponseDto,
   })
-  @Get('all')
+  @Get('')
   getAllDestinations(
     @GetUser() user: { sub: string; email: string },
   ): Promise<GetAllDestinationsResponseDto> {
