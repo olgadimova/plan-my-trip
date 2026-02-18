@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
+    "module": "CommonJS",
     "moduleResolution": "nodenext",
-    "resolvePackageJsonExports": true,
+    "allowJs": true,
+    //    "resolvePackageJsonExports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
     "declaration": true,
