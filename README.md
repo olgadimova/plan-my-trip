@@ -1,4 +1,4 @@
-## Plan My Trip - Trip planner backend api
+## Plan My Trip - Trip planner backend api (for showcase purposes only)
 
 ---
 
