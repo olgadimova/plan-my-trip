@@ -33,7 +33,7 @@ describe('Auth controller and service integration', () => {
     prisma = authModuleRef.get(PrismaDbService);
   });
 
-  afterEach(async () => {
+  beforeEach(async () => {
     await prisma.user.deleteMany({});
   });
 

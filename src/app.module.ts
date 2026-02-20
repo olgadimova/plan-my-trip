@@ -11,7 +11,10 @@ import { PrismaDbModule } from './prisma_db/prisma_db.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+    }),
     PrismaDbModule,
     AuthModule,
     DestinationModule,

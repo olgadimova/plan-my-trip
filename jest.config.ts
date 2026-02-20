@@ -7,7 +7,7 @@ const config: Config.InitialOptions = {
   moduleFileExtensions: ['ts', 'js', 'json'],
   testRegex: '.*\\.(integration)-spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
+    '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
   moduleNameMapper: {
     '^generated/(.*)$': '<rootDir>/src/generated/$1',

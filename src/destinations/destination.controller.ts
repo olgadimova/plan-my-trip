@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -93,6 +95,7 @@ export class DestinationController {
     type: DestinationResultModel,
   })
   @Patch(':id')
+  @HttpCode(HttpStatus.OK)
   editDestination(
     @GetUser() user: { sub: string; email: string },
     @Param('id') id: string,
