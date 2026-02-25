@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { User } from 'generated/prisma/client';
+import { Role, User } from 'generated/prisma/client';
 
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -35,7 +35,7 @@ export class AuthService {
         },
       });
 
-      return this.generateToken(user.id, user.email);
+      return this.generateToken(user.id, user.email, user.role);
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -67,7 +67,7 @@ export class AuthService {
     if (!isPasswordMatch)
       throw new ForbiddenException('User name or email is incorrect');
 
-    return this.generateToken(user.id, user.email);
+    return this.generateToken(user.id, user.email, user.role);
   }
 
   // TODO
@@ -76,10 +76,12 @@ export class AuthService {
   async generateToken(
     userId: string,
     email: string,
+    role: Role,
   ): Promise<AuthenticateResultDto> {
     const payload = {
       sub: userId,
       email,
+      role,
     };
 
     const accessToken: string = await this.jwt.signAsync(payload, {

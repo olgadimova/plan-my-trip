@@ -8,6 +8,7 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { DestinationModule } from './destinations/destination.module';
 import { PrismaDbModule } from './prisma_db/prisma_db.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PrismaDbModule } from './prisma_db/prisma_db.module';
     AuthModule,
     DestinationModule,
     ActivityModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
