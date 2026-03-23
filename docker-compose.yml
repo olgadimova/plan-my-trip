@@ -7,8 +7,11 @@ services:
       POSTGRES_USER: ${DB_DEV_USERNAME}
       POSTGRES_PASSWORD: ${DB_DEV_PASSWORD}
       POSTGRES_DB:  ${DB_DEV_TITLE}
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
     networks:
       - plan-my-trip-nw
+    profiles: ['dev']
   plan-my-trip-test-db:
     image: postgres:13
     ports:
@@ -17,7 +20,20 @@ services:
       POSTGRES_USER: ${DB_DEV_USERNAME}
       POSTGRES_PASSWORD: ${DB_DEV_PASSWORD}
       POSTGRES_DB: ${DB_DEV_TITLE}
+    volumes:
+      - test-db-data:/var/lib/postgresql/data
     networks:
       - plan-my-trip-nw
+    profiles: ['test']
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - plan-my-trip-nw
+    profiles: ["dev", "test"]
+volumes:
+  dev-db-data:
+  test-db-data:
 networks:
   plan-my-trip-nw:
