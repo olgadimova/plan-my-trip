@@ -1,11 +1,12 @@
+import { Cache } from '@nestjs/cache-manager';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-
 import { DestinationModel } from 'generated/nestjs-dto/destination.entity';
 import { UserModel } from 'generated/nestjs-dto/user.entity';
 
 import { PrismaDbService } from '../prisma_db/prisma_db.service';
 import { ActivityResponseModel } from '../shared/dto';
+import { CacheKeys } from '../shared/utilities/cache_keys';
 import {
   ActivitiesResponseDto,
   CreateDestinationDto,
@@ -15,19 +16,38 @@ import {
 
 @Injectable()
 export class DestinationService {
-  constructor(private prisma: PrismaDbService) {}
+  constructor(
+    private prisma: PrismaDbService,
+    private cacheManager: Cache,
+  ) {}
 
   async getAllDestinations(
     userId: UserModel['id'],
   ): Promise<GetAllDestinationsResponseDto> {
+    const cacheKey: string = CacheKeys.destinations(userId);
+
+    const destinationsCache =
+      await this.cacheManager.get<DestinationResultModel[]>(cacheKey);
+
+    if (destinationsCache) {
+      return { destinations: destinationsCache };
+    }
+
     const destinations = await this.prisma.destination.findMany({
       where: {
         userId,
       },
     });
 
+    const userDestinations: DestinationResultModel[] = plainToInstance(
+      DestinationResultModel,
+      destinations,
+    );
+
+    await this.cacheManager.set(cacheKey, userDestinations);
+
     return {
-      destinations: plainToInstance(DestinationResultModel, destinations),
+      destinations: userDestinations,
     };
   }
 
@@ -58,6 +78,15 @@ export class DestinationService {
     destinationId: string;
     userId: string;
   }): Promise<ActivitiesResponseDto> {
+    const cacheKey: string = CacheKeys.activities(`${userId}:${destinationId}`);
+
+    const activitiesCache =
+      await this.cacheManager.get<ActivityResponseModel[]>(cacheKey);
+
+    if (activitiesCache) {
+      return { activities: activitiesCache };
+    }
+
     const activities = await this.prisma.activity.findMany({
       where: {
         destinationId,
@@ -65,7 +94,14 @@ export class DestinationService {
       },
     });
 
-    return { activities: plainToInstance(ActivityResponseModel, activities) };
+    const userActivities: ActivityResponseModel[] = plainToInstance(
+      ActivityResponseModel,
+      activities,
+    );
+
+    await this.cacheManager.set(cacheKey, userActivities);
+
+    return { activities: userActivities };
   }
 
   async createDestination({
