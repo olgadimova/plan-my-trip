@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 
 import { ActivityModel } from 'generated/nestjs-dto/activity.entity';
@@ -7,11 +8,15 @@ import { Prisma } from 'generated/prisma/client';
 
 import { PrismaDbService } from '../prisma_db/prisma_db.service';
 import { ActivityResponseModel } from '../shared/dto';
+import { CacheKeys } from '../shared/utilities/cache_keys';
 import { CreateActivityDto, UpdateActivityDto } from './dto';
 
 @Injectable()
 export class ActivityService {
-  constructor(private prisma: PrismaDbService) {}
+  constructor(
+    private prisma: PrismaDbService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   async getActivityById({
     userId,
@@ -48,10 +53,10 @@ export class ActivityService {
       });
 
     if (!destination || destination.userId !== userId) {
-      throw new NotFoundException('No activity found');
+      throw new NotFoundException('No destination found');
     }
 
-    const activity = this.prisma.activity.create({
+    const activity = await this.prisma.activity.create({
       data: {
         userId: userId,
         title: data.title,
@@ -59,6 +64,13 @@ export class ActivityService {
         destinationId: data.destination_id,
       },
     });
+
+    const cacheKey: string = CacheKeys.activities(
+      activity.destinationId,
+      userId,
+    );
+
+    await this.cacheManager.del(cacheKey);
 
     return plainToInstance(ActivityResponseModel, activity);
   }
@@ -85,6 +97,13 @@ export class ActivityService {
         id: activityId,
       },
     });
+
+    const cacheKey: string = CacheKeys.activities(
+      activity.destinationId,
+      userId,
+    );
+
+    await this.cacheManager.del(cacheKey);
   }
 
   async updateActivity({
@@ -109,6 +128,7 @@ export class ActivityService {
     let dto: Prisma.ActivityUpdateInput = {
       title: data.title,
       description: data.description,
+      updatedAt: new Date(),
     };
 
     if (data.destination_id !== undefined) {
@@ -135,6 +155,13 @@ export class ActivityService {
       },
       data: dto,
     });
+
+    const cacheKey: string = CacheKeys.activities(
+      activity.destinationId,
+      userId,
+    );
+
+    await this.cacheManager.del(cacheKey);
 
     return plainToInstance(ActivityResponseModel, updatedActivity);
   }

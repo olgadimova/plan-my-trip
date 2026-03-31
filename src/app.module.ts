@@ -23,7 +23,7 @@ import { UsersModule } from './users/users.module';
         ttl: 30000,
         stores: [
           new KeyvRedis(
-            `redis://${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT ?? '6379'}`,
+            `redis://${process.env.REDIS_HOST ?? 'localhost'}:${process.env.REDIS_PORT ?? '6379'}`,
           ),
         ],
       }),

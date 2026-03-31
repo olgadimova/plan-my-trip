@@ -1,5 +1,5 @@
-import { Cache } from '@nestjs/cache-manager';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DestinationModel } from 'generated/nestjs-dto/destination.entity';
 import { UserModel } from 'generated/nestjs-dto/user.entity';
@@ -18,7 +18,7 @@ import {
 export class DestinationService {
   constructor(
     private prisma: PrismaDbService,
-    private cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async getAllDestinations(
@@ -78,7 +78,7 @@ export class DestinationService {
     destinationId: string;
     userId: string;
   }): Promise<ActivitiesResponseDto> {
-    const cacheKey: string = CacheKeys.activities(`${userId}:${destinationId}`);
+    const cacheKey: string = CacheKeys.activities(destinationId, userId);
 
     const activitiesCache =
       await this.cacheManager.get<ActivityResponseModel[]>(cacheKey);
@@ -98,7 +98,6 @@ export class DestinationService {
       ActivityResponseModel,
       activities,
     );
-
     await this.cacheManager.set(cacheKey, userActivities);
 
     return { activities: userActivities };
@@ -148,8 +147,10 @@ export class DestinationService {
       },
     });
 
-    const cacheKey: string = CacheKeys.destinations(userId);
-    await this.cacheManager.del(cacheKey);
+    const cacheKeyDestination: string = CacheKeys.destinations(userId);
+    const cacheKeyActivities: string = CacheKeys.activities(id, userId);
+
+    await this.cacheManager.mdel([cacheKeyActivities, cacheKeyDestination]);
   }
 
   async editDestination({
