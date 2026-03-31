@@ -1,10 +1,9 @@
 import { AppService } from './app.service';
 
+import KeyvRedis from '@keyv/redis';
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
 import { ActivityModule } from './activities/activity.module';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
@@ -20,14 +19,13 @@ import { UsersModule } from './users/users.module';
     }),
     CacheModule.registerAsync({
       isGlobal: true,
-      useFactory: async () => ({
-        store: await redisStore({
-          socket: {
-            host: process.env.REDIS_HOST || 'localhost',
-            port: parseInt(process.env.REDIS_PORT ?? '6379') || 6379,
-          },
-          ttl: 30000,
-        }),
+      useFactory: () => ({
+        ttl: 30000,
+        stores: [
+          new KeyvRedis(
+            `redis://${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT ?? '6379'}`,
+          ),
+        ],
       }),
     }),
     PrismaDbModule,

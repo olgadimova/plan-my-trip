@@ -120,6 +120,9 @@ export class DestinationService {
       },
     });
 
+    const cacheKey: string = CacheKeys.destinations(userId);
+    await this.cacheManager.del(cacheKey);
+
     return plainToInstance(DestinationResultModel, destination);
   }
 
@@ -144,6 +147,9 @@ export class DestinationService {
         id,
       },
     });
+
+    const cacheKey: string = CacheKeys.destinations(userId);
+    await this.cacheManager.del(cacheKey);
   }
 
   async editDestination({
@@ -175,6 +181,9 @@ export class DestinationService {
           dueDate: data.due_date,
         },
       });
+
+    const cacheKey: string = CacheKeys.destinations(userId);
+    await this.cacheManager.del(cacheKey);
 
     return plainToInstance(DestinationResultModel, updatedDestination);
   }
