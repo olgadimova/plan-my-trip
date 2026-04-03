@@ -1,5 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 import { UserModel } from 'generated/nestjs-dto/user.entity';
 import { AuthService } from './auth.service';
@@ -8,6 +9,9 @@ import { Public } from './shared';
 
 @ApiTags('Auth')
 @Controller('auth')
+@Throttle({
+  short: { limit: 5, ttl: 10000 },
+})
 export class AuthController {
   constructor(private authService: AuthService) {}
 

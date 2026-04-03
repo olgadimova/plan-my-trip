@@ -30,7 +30,12 @@ export class DestinationService {
       await this.cacheManager.get<DestinationResultModel[]>(cacheKey);
 
     if (destinationsCache) {
-      return { destinations: destinationsCache };
+      return {
+        destinations: plainToInstance(
+          DestinationResultModel,
+          destinationsCache,
+        ),
+      };
     }
 
     const destinations = await this.prisma.destination.findMany({
@@ -84,7 +89,9 @@ export class DestinationService {
       await this.cacheManager.get<ActivityResponseModel[]>(cacheKey);
 
     if (activitiesCache) {
-      return { activities: activitiesCache };
+      return {
+        activities: plainToInstance(ActivityResponseModel, activitiesCache),
+      };
     }
 
     const activities = await this.prisma.activity.findMany({
