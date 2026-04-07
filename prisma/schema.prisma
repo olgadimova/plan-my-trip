@@ -53,6 +53,11 @@ model User {
   /// @DtoEntityHidden
   Activity    Activity[]
 
+  /// @DtoEntityHidden
+  resetTokenHash      String?   @unique @map("reset_token_hash")
+  /// @DtoEntityHidden
+  resetTokenExpiresAt DateTime? @map("reset_token_expires_at")
+
   @@map("users")
 }
 

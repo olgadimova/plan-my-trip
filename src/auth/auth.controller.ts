@@ -1,10 +1,16 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
 import { UserModel } from 'generated/nestjs-dto/user.entity';
+import { MessageResultDto } from '../shared/dto';
 import { AuthService } from './auth.service';
-import { LoginUserDto, RegisterUserDto } from './dto';
+import {
+  LoginUserDto,
+  RegisterUserDto,
+  ResetPasswordConfirmDto,
+  ResetPasswordDto,
+} from './dto';
 import { Public } from './shared';
 
 @ApiTags('Auth')
@@ -36,14 +42,20 @@ export class AuthController {
     return this.authService.login(body);
   }
 
-  // TODO: reset-password
-  // @ApiCreatedResponse({
-  //   description: 'Password reset done',
-  // })
-  // @HttpCode(HttpStatus.OK)
-  // @Public()
-  // @Post('reset-password')
-  // resetPassword() {
-  //   return this.authService.resetPassword();
-  // }
+  @HttpCode(HttpStatus.OK)
+  @Public()
+  @Post('reset-password')
+  resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body);
+  }
+
+  @ApiResponse({
+    type: MessageResultDto,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Public()
+  @Post('reset-password/confirm')
+  resetPasswordConfirm(@Body() body: ResetPasswordConfirmDto) {
+    return this.authService.resetPasswordConfirm(body);
+  }
 }

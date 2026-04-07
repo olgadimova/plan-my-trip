@@ -1,5 +1,11 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { createHash, randomBytes } from 'crypto';
+
 import { Role, User } from 'generated/prisma/client';
 
 import { ConfigService } from '@nestjs/config';
@@ -7,7 +13,14 @@ import { JwtService } from '@nestjs/jwt';
 
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { PrismaDbService } from '../prisma_db/prisma_db.service';
-import { AuthenticateResultDto, LoginUserDto, RegisterUserDto } from './dto';
+import { MessageResultDto } from '../shared/dto';
+import {
+  AuthenticateResultDto,
+  LoginUserDto,
+  RegisterUserDto,
+  ResetPasswordConfirmDto,
+  ResetPasswordDto,
+} from './dto';
 
 const SALT_ROUNDS: number = 10;
 
@@ -65,13 +78,85 @@ export class AuthService {
     );
 
     if (!isPasswordMatch)
-      throw new ForbiddenException('User name or email is incorrect');
+      throw new ForbiddenException('Email or password is incorrect');
 
     return this.generateToken(user.id, user.email, user.role);
   }
 
-  // TODO
-  // async resetPassword() {}
+  async resetPassword({ email }: ResetPasswordDto): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (user) {
+      const rawToken: string = randomBytes(32).toString('hex');
+      const hashedToken: string = createHash('sha256')
+        .update(rawToken)
+        .digest('hex');
+
+      await this.prisma.user.update({
+        where: { email },
+        data: {
+          resetTokenHash: hashedToken,
+          // 1 hour token
+          resetTokenExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        },
+      });
+
+      const resetLink: string = `https://.../reset-password?token=${rawToken}`;
+
+      // TODO - email queues
+    }
+  }
+
+  async resetPasswordConfirm({
+    token: confirmToken,
+    password,
+  }: ResetPasswordConfirmDto): Promise<MessageResultDto> {
+    const inputHash: string = createHash('sha256')
+      .update(confirmToken)
+      .digest('hex');
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        resetTokenHash: inputHash,
+      },
+    });
+
+    if (!user || !user.resetTokenExpiresAt) {
+      throw new BadRequestException('Token expired.');
+    }
+
+    if (user.resetTokenExpiresAt < new Date()) {
+      await this.prisma.user.update({
+        where: {
+          resetTokenHash: inputHash,
+        },
+        data: {
+          resetTokenHash: null,
+          resetTokenExpiresAt: null,
+        },
+      });
+      throw new BadRequestException('Token expired.');
+    }
+
+    const hashedPassword: string = await bcrypt.hash(password, SALT_ROUNDS);
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        password: hashedPassword,
+        resetTokenHash: null,
+        resetTokenExpiresAt: null,
+      },
+    });
+
+    return { message: 'Password reset successful.' };
+  }
 
   async generateToken(
     userId: string,
