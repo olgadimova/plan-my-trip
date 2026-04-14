@@ -11,6 +11,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { DestinationModule } from './destinations/destination.module';
 import { PrismaDbModule } from './prisma_db/prisma_db.module';
+import { QueueModule } from './queues/queue.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -45,6 +46,7 @@ import { UsersModule } from './users/users.module';
     DestinationModule,
     ActivityModule,
     UsersModule,
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [

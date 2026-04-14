@@ -13,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { PrismaDbService } from '../prisma_db/prisma_db.service';
+import { EmailService } from '../queues/email.service';
 import { MessageResultDto } from '../shared/dto';
 import {
   AuthenticateResultDto,
@@ -30,6 +31,7 @@ export class AuthService {
     private prisma: PrismaDbService,
     private config: ConfigService,
     private jwt: JwtService,
+    private emailService: EmailService,
   ) {}
 
   async register({
@@ -83,7 +85,7 @@ export class AuthService {
     return this.generateToken(user.id, user.email, user.role);
   }
 
-  async resetPassword({ email }: ResetPasswordDto): Promise<void> {
+  async resetPassword({ email }: ResetPasswordDto): Promise<MessageResultDto> {
     const user = await this.prisma.user.findUnique({
       where: {
         email,
@@ -107,8 +109,18 @@ export class AuthService {
 
       const resetLink: string = `https://.../reset-password?token=${rawToken}`;
 
-      // TODO - email queues
+      await this.emailService.sendEmail({
+        to: email,
+        subject: 'Reset email',
+        data: {
+          resetLink,
+        },
+      });
+
+      return { message: 'Reset password email successfully sent.' };
     }
+
+    return { message: 'Email is incorrect.' };
   }
 
   async resetPasswordConfirm({
