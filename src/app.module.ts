@@ -18,7 +18,10 @@ import { UsersModule } from './users/users.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+      envFilePath:
+        process.env.NODE_ENV === 'production'
+          ? undefined
+          : `.env.${process.env.NODE_ENV || 'development'}`,
     }),
     CacheModule.registerAsync({
       isGlobal: true,

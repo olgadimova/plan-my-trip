@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: plan-my-trip-api
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    autoDeploy: true
+    runtime: node
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5001
+      - key: DATABASE_URL
+      - key: REDIS_HOST
+      - key: REDIS_PORT
+      - key: JWT_SECRET
+
+  
