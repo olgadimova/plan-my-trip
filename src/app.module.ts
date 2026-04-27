@@ -10,12 +10,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { DestinationModule } from './destinations/destination.module';
+import { LoggerModule } from './logger/logger.module';
 import { PrismaDbModule } from './prisma_db/prisma_db.module';
 import { QueueModule } from './queues/queue.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
+    // utility modules
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath:
@@ -44,7 +46,10 @@ import { UsersModule } from './users/users.module';
         },
       ],
     }),
+    LoggerModule,
     PrismaDbModule,
+
+    // app modules
     AuthModule,
     DestinationModule,
     ActivityModule,
