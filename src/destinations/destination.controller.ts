@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -17,6 +18,7 @@ import { DestinationModel } from 'generated/nestjs-dto/destination.entity';
 
 import { GetUser } from '../auth/decorator';
 import { RequestUserModel } from '../auth/dto';
+import { PaginationDto } from '../shared/dto';
 import { DestinationService } from './destination.service';
 import {
   ActivitiesResponseDto,
@@ -37,8 +39,9 @@ export class DestinationController {
   @Get('')
   getAllDestinations(
     @GetUser() user: { sub: string; email: string },
+    @Query() query: PaginationDto,
   ): Promise<GetAllDestinationsResponseDto> {
-    return this.destinationService.getAllDestinations(user.sub);
+    return this.destinationService.getAllDestinations(user.sub, query);
   }
 
   @ApiResponse({

@@ -3,9 +3,14 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DestinationModel } from 'generated/nestjs-dto/destination.entity';
 import { UserModel } from 'generated/nestjs-dto/user.entity';
+import { DestinationWhereInput } from 'generated/prisma/models/Destination';
 
 import { PrismaDbService } from '../prisma_db/prisma_db.service';
-import { ActivityResponseModel } from '../shared/dto';
+import {
+  ActivityResponseModel,
+  MetaResultModel,
+  PaginationDto,
+} from '../shared/dto';
 import { CacheKeys } from '../shared/utilities/cache_keys';
 import {
   ActivitiesResponseDto,
@@ -23,36 +28,71 @@ export class DestinationService {
 
   async getAllDestinations(
     userId: UserModel['id'],
+    { page, per_page: perPage }: PaginationDto,
   ): Promise<GetAllDestinationsResponseDto> {
-    const cacheKey: string = CacheKeys.destinations(userId);
+    const versionKey: string = CacheKeys.destinations(userId);
+
+    let version: number | undefined =
+      await this.cacheManager.get<number>(versionKey);
+
+    if (!version) {
+      version = 1;
+      await this.cacheManager.set(versionKey, version);
+    }
+
+    const cacheKey: string = CacheKeys.destinationsByVersion({
+      userId,
+      page,
+      perPage,
+      version,
+    });
 
     const destinationsCache =
-      await this.cacheManager.get<DestinationResultModel[]>(cacheKey);
+      await this.cacheManager.get<GetAllDestinationsResponseDto>(cacheKey);
 
     if (destinationsCache) {
       return {
         destinations: plainToInstance(
           DestinationResultModel,
-          destinationsCache,
+          destinationsCache.destinations,
         ),
+        meta: destinationsCache.meta,
       };
     }
 
-    const destinations = await this.prisma.destination.findMany({
-      where: {
-        userId,
-      },
-    });
+    const skip: number = (page - 1) * perPage;
+    const where: DestinationWhereInput = { userId };
+
+    const [destinations, total] = await this.prisma.$transaction([
+      this.prisma.destination.findMany({
+        skip,
+        take: perPage,
+        orderBy: { createdAt: 'desc' },
+        where,
+      }),
+      this.prisma.destination.count({ where }),
+    ]);
 
     const userDestinations: DestinationResultModel[] = plainToInstance(
       DestinationResultModel,
       destinations,
     );
 
-    await this.cacheManager.set(cacheKey, userDestinations);
+    const meta: MetaResultModel = {
+      total,
+      page,
+      per_page: perPage,
+      last_page: Math.ceil(total / perPage),
+    };
+
+    await this.cacheManager.set(cacheKey, {
+      destinations: userDestinations,
+      meta,
+    });
 
     return {
       destinations: userDestinations,
+      meta,
     };
   }
 
@@ -110,6 +150,13 @@ export class DestinationService {
     return { activities: userActivities };
   }
 
+  async clearDestinationsCache(userId: string): Promise<void> {
+    const versionKey: string = CacheKeys.destinations(userId);
+    const version: number | undefined =
+      await this.cacheManager.get<number>(versionKey);
+    await this.cacheManager.set(versionKey, (version || 1) + 1);
+  }
+
   async createDestination({
     userId,
     data,
@@ -126,9 +173,7 @@ export class DestinationService {
       },
     });
 
-    const cacheKey: string = CacheKeys.destinations(userId);
-    await this.cacheManager.del(cacheKey);
-
+    await this.clearDestinationsCache(userId);
     return plainToInstance(DestinationResultModel, destination);
   }
 
@@ -154,10 +199,10 @@ export class DestinationService {
       },
     });
 
-    const cacheKeyDestination: string = CacheKeys.destinations(userId);
-    const cacheKeyActivities: string = CacheKeys.activities(id, userId);
+    await this.clearDestinationsCache(userId);
 
-    await this.cacheManager.mdel([cacheKeyActivities, cacheKeyDestination]);
+    const cacheKeyActivities: string = CacheKeys.activities(id, userId);
+    await this.cacheManager.del(cacheKeyActivities);
   }
 
   async editDestination({
@@ -190,8 +235,7 @@ export class DestinationService {
         },
       });
 
-    const cacheKey: string = CacheKeys.destinations(userId);
-    await this.cacheManager.del(cacheKey);
+    await this.clearDestinationsCache(userId);
 
     return plainToInstance(DestinationResultModel, updatedDestination);
   }

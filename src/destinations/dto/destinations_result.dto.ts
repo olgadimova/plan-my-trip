@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Expose } from 'class-transformer';
+import { MetaResultModel } from '../../shared/dto';
 
 export class DestinationResultModel {
   @ApiProperty({
@@ -55,4 +56,5 @@ export class GetAllDestinationsResponseDto {
     type: [DestinationResultModel],
   })
   destinations: DestinationResultModel[];
+  meta: MetaResultModel;
 }
