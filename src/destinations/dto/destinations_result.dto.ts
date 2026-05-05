@@ -56,5 +56,8 @@ export class GetAllDestinationsResponseDto {
     type: [DestinationResultModel],
   })
   destinations: DestinationResultModel[];
+  @ApiProperty({
+    type: MetaResultModel,
+  })
   meta: MetaResultModel;
 }

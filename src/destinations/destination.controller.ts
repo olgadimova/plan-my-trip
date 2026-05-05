@@ -62,10 +62,12 @@ export class DestinationController {
   getDestinationActivities(
     @GetUser() user: RequestUserModel,
     @Param('destinationId') destinationId: string,
+    @Query() query: PaginationDto,
   ): Promise<ActivitiesResponseDto> {
     return this.destinationService.getDestinationActivities({
       destinationId,
       userId: user.sub,
+      query,
     });
   }
 

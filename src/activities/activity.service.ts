@@ -38,6 +38,21 @@ export class ActivityService {
     return plainToInstance(ActivityResponseModel, activity);
   }
 
+  async clearActivitiesCache({
+    destinationId,
+    userId,
+  }: {
+    destinationId: string;
+    userId: string;
+  }) {
+    const versionKey: string = CacheKeys.activities({ destinationId, userId });
+
+    const version: number | undefined =
+      await this.cacheManager.get<number>(versionKey);
+
+    await this.cacheManager.set(versionKey, (version || 1) + 1);
+  }
+
   async createActivity({
     userId,
     data,
@@ -65,12 +80,7 @@ export class ActivityService {
       },
     });
 
-    const cacheKey: string = CacheKeys.activities(
-      activity.destinationId,
-      userId,
-    );
-
-    await this.cacheManager.del(cacheKey);
+    await this.clearActivitiesCache({ destinationId: destination.id, userId });
 
     return plainToInstance(ActivityResponseModel, activity);
   }
@@ -98,12 +108,10 @@ export class ActivityService {
       },
     });
 
-    const cacheKey: string = CacheKeys.activities(
-      activity.destinationId,
+    await this.clearActivitiesCache({
+      destinationId: activity.destinationId,
       userId,
-    );
-
-    await this.cacheManager.del(cacheKey);
+    });
   }
 
   async updateActivity({
@@ -156,12 +164,10 @@ export class ActivityService {
       data: dto,
     });
 
-    const cacheKey: string = CacheKeys.activities(
-      activity.destinationId,
+    await this.clearActivitiesCache({
+      destinationId: activity.destinationId,
       userId,
-    );
-
-    await this.cacheManager.del(cacheKey);
+    });
 
     return plainToInstance(ActivityResponseModel, updatedActivity);
   }
