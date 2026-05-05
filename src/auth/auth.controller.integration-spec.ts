@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { PrismaDbModule } from '../prisma_db/prisma_db.module';
 import { PrismaDbService } from '../prisma_db/prisma_db.service';
+import { QueueModule } from '../queues/queue.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AuthenticateResultDto, RegisterUserDto } from './dto';
@@ -24,6 +25,7 @@ describe('Auth controller and service integration', () => {
         ConfigModule.forRoot({ isGlobal: true }),
         JwtModule.register({}),
         PrismaDbModule,
+        QueueModule,
       ],
       controllers: [AuthController],
       providers: [AuthService, JwtStrategy],
@@ -31,6 +33,7 @@ describe('Auth controller and service integration', () => {
 
     authController = authModuleRef.get(AuthController);
     prisma = authModuleRef.get(PrismaDbService);
+    await prisma.user.deleteMany({});
   });
 
   beforeEach(async () => {
@@ -77,7 +80,7 @@ describe('Auth controller and service integration', () => {
 
       await expect(
         authController.login({ ...data, password: '345' }),
-      ).rejects.toThrow('User name or email is incorrect');
+      ).rejects.toThrow('Email or password is incorrect');
     });
   });
 });

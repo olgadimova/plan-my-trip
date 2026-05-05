@@ -128,6 +128,12 @@ describe('AppModule e2e', () => {
         .expectStatus(200)
         .expectBody({
           destinations: [],
+          meta: {
+            last_page: 0,
+            page: 1,
+            per_page: 10,
+            total: 0,
+          },
         });
     });
 
@@ -182,6 +188,12 @@ describe('AppModule e2e', () => {
         .expectStatus(200)
         .expectBody({
           destinations: [],
+          meta: {
+            last_page: 0,
+            page: 1,
+            per_page: 10,
+            total: 0,
+          },
         });
     });
   });
