@@ -1,0 +1,514 @@
+openapi: 3.0.0
+paths:
+  /auth/register:
+    post:
+      operationId: AuthController_register
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterUserDto"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserModel"
+      tags: &a1
+        - Auth
+  /auth/login:
+    post:
+      operationId: AuthController_login
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginUserDto"
+      responses:
+        "201":
+          description: User logged in
+      tags: *a1
+  /auth/reset-password:
+    post:
+      operationId: AuthController_resetPassword
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordDto"
+      responses:
+        "200":
+          description: ""
+      tags: *a1
+  /auth/reset-password/confirm:
+    post:
+      operationId: AuthController_resetPasswordConfirm
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordConfirmDto"
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResultDto"
+      tags: *a1
+  /destinations:
+    get:
+      operationId: DestinationController_getAllDestinations
+      parameters: []
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetAllDestinationsResponseDto"
+      tags: &a2
+        - Destinations
+    post:
+      operationId: DestinationController_createDestination
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDestinationDto"
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationModel"
+      tags: *a2
+  /destinations/{id}:
+    get:
+      operationId: DestinationController_getDestination
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationModel"
+      tags: *a2
+    delete:
+      operationId: DestinationController_deleteDestination
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+      tags: *a2
+    patch:
+      operationId: DestinationController_editDestination
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDestinationDto"
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationResultModel"
+      tags: *a2
+  /destinations/{destinationId}/activities:
+    get:
+      operationId: DestinationController_getDestinationActivities
+      parameters:
+        - name: destinationId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivitiesResponseDto"
+      tags: *a2
+  /activities/{id}:
+    get:
+      operationId: ActivityController_getActivityById
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityResponseModel"
+      tags: &a3
+        - Activities
+    patch:
+      operationId: ActivityController_updateActivity
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateActivityDto"
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityResponseModel"
+      tags: *a3
+    delete:
+      operationId: ActivityController_deleteActivity
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+      tags: *a3
+  /activities:
+    post:
+      operationId: ActivityController_createActivity
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateActivityDto"
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityResponseModel"
+      tags: *a3
+  /users/all:
+    get:
+      operationId: UsersController_getAllUsers
+      parameters: []
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetAllUsersResponseDto"
+      tags:
+        - Users
+info:
+  title: Plan-my-trip backend api
+  description: API documentation for a sample app. For development purposes only.
+  version: "1.0"
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas:
+    RegisterUserDto:
+      type: object
+      properties:
+        email:
+          type: string
+          example: test@test.com
+        password:
+          type: string
+          example: 123abc@#
+        name:
+          type: string
+          example: John Doe
+      required:
+        - email
+        - password
+    Role:
+      type: string
+      enum:
+        - ADMIN
+        - USER
+    UserModel:
+      type: object
+      properties:
+        id:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        role:
+          allOf:
+            - $ref: "#/components/schemas/Role"
+        email:
+          type: string
+        name:
+          type: string
+          nullable: true
+      required:
+        - id
+        - createdAt
+        - updatedAt
+        - role
+        - email
+        - name
+    LoginUserDto:
+      type: object
+      properties:
+        email:
+          type: string
+          example: test@test.com
+        password:
+          type: string
+          example: 123abc@#
+      required:
+        - email
+        - password
+    ResetPasswordDto:
+      type: object
+      properties:
+        email:
+          type: string
+      required:
+        - email
+    ResetPasswordConfirmDto:
+      type: object
+      properties:
+        token:
+          type: string
+        password:
+          type: string
+          example: 123abc@#
+      required:
+        - token
+        - password
+    MessageResultDto:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    DestinationResultModel:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date-time
+        userId:
+          type: string
+      required:
+        - id
+        - title
+        - createdAt
+        - updatedAt
+        - dueDate
+        - userId
+    MetaResultModel:
+      type: object
+      properties:
+        total:
+          type: number
+        page:
+          type: number
+        per_page:
+          type: number
+        last_page:
+          type: number
+      required:
+        - total
+        - page
+        - per_page
+        - last_page
+    GetAllDestinationsResponseDto:
+      type: object
+      properties:
+        destinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationResultModel"
+        meta:
+          $ref: "#/components/schemas/MetaResultModel"
+      required:
+        - destinations
+        - meta
+    DestinationModel:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date-time
+        userId:
+          type: string
+      required:
+        - id
+        - title
+        - description
+        - createdAt
+        - updatedAt
+        - dueDate
+        - userId
+    ActivityResponseModel:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - title
+        - description
+        - createdAt
+        - updatedAt
+    ActivitiesResponseDto:
+      type: object
+      properties:
+        activities:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityResponseModel"
+        meta:
+          $ref: "#/components/schemas/MetaResultModel"
+      required:
+        - activities
+        - meta
+    CreateDestinationDto:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        due_date:
+          type: string
+          format: date-time
+      required:
+        - title
+        - due_date
+    CreateActivityDto:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        destination_id:
+          type: string
+      required:
+        - title
+        - destination_id
+    UpdateActivityDto:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        destination_id:
+          type: string
+      required:
+        - title
+        - destination_id
+    UserResponseModel:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - email
+        - name
+        - createdAt
+    GetAllUsersResponseDto:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserResponseModel"
+      required:
+        - users

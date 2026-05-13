@@ -11,4 +11,6 @@ This is a backend api for a travel planner application. Includes:
 5. Managing users (route guard, only for Admin)
 6. Utilities: request body validation, route tests, email queues, data caching, route rate-limit, logging with pino
 
+## API Documentation
 
+- View raw YAML: [openapi.yaml](./openapi.yaml)
